@@ -1,0 +1,19 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+publish/
+dist_store/
+
+# Local executables and user settings (released via GitHub Releases)
+/AudioAwake.exe
+/SoundbarKeepAlive.exe
+/*.zip
+/settings.json
+*.pdb
+*.user
+*.suo
+.vs/
