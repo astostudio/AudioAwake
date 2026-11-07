@@ -8,7 +8,11 @@ x86/
 publish/
 dist_store/
 
-# Local executables and user settings (released via GitHub Releases)
+# Private commercial editions and license keys (NEVER upload to public repo)
+Ediciones/
+MIS_CLAVES_PRO_PRIVADAS.txt
+
+# Local executables and user settings
 /AudioAwake.exe
 /SoundbarKeepAlive.exe
 /*.zip

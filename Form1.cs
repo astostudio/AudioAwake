@@ -1037,12 +1037,14 @@ public partial class Form1 : Form
 
         if (_rectBrandPill.Contains(pt))
         {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
             ShowBrandSelectorPopup();
             return;
         }
 
         if (_rectHotkeyCard.Contains(pt))
         {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
             _isRecordingHotkey = !_isRecordingHotkey;
             Invalidate();
             return;
@@ -1050,6 +1052,7 @@ public partial class Form1 : Form
 
         if (_rectIdleTimeCard.Contains(pt))
         {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
             CycleIdleMinutes();
             return;
         }
@@ -1062,6 +1065,7 @@ public partial class Form1 : Form
 
         if (_rectTileEco.Contains(pt))
         {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
             _settings.IdleSleepEnabled = !_settings.IdleSleepEnabled;
             _settings.Save();
             _engine.ApplySettingsLive();
@@ -1071,6 +1075,7 @@ public partial class Form1 : Form
 
         if (_rectTileStartup.Contains(pt))
         {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
             AppSettings.SetStartupEnabled(!AppSettings.IsStartupEnabled());
             SyncTrayAndInvalidate();
             return;
@@ -1087,17 +1092,29 @@ public partial class Form1 : Form
 
         if (_rectDialMinus.Contains(pt))
         {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
             SetStrengthLevel(Math.Max(1, _settings.StrengthLevel - 1));
             return;
         }
         if (_rectDialPlus.Contains(pt))
         {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
             SetStrengthLevel(Math.Min(5, _settings.StrengthLevel + 1));
             return;
         }
         if (_rectModeBtn1.Contains(pt)) { SetStrengthLevel(1); return; }
-        if (_rectModeBtn2.Contains(pt)) { SetStrengthLevel(2); return; }
-        if (_rectModeBtn3.Contains(pt)) { SetStrengthLevel(4); return; }
+        if (_rectModeBtn2.Contains(pt))
+        {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
+            SetStrengthLevel(2);
+            return;
+        }
+        if (_rectModeBtn3.Contains(pt))
+        {
+            if (!_settings.IsProUnlocked && PromptProLicenseUnlock()) return;
+            SetStrengthLevel(4);
+            return;
+        }
 
         if (_rectHideToTrayCard.Contains(pt) || _rectTopMinBtn.Contains(pt))
         {
@@ -1122,6 +1139,102 @@ public partial class Form1 : Form
             _engine.SetTestTone(false);
             Invalidate();
         }
+    }
+
+    private bool PromptProLicenseUnlock()
+    {
+        if (_settings.IsProUnlocked) return false;
+
+        using var dlg = new Form
+        {
+            Text = IsEn ? "Unlock AudioAwake PRO" : "Desbloquear AudioAwake PRO",
+            Size = new Size(440, 230),
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            StartPosition = FormStartPosition.CenterParent,
+            MaximizeBox = false,
+            MinimizeBox = false,
+            BackColor = Color.FromArgb(30, 32, 38),
+            ForeColor = Color.White,
+            Font = UiFont(9.5F)
+        };
+
+        var lblInfo = new Label
+        {
+            Location = new Point(20, 18),
+            Size = new Size(385, 58),
+            Text = IsEn
+                ? "🔒 This feature requires AudioAwake PRO (Brand Presets, Lv.2-5 Anti-Gate Turbo, Eco-Sleep & Auto-Start).\n\nEnter your PRO License Key below:"
+                : "🔒 Esta función es exclusiva de AudioAwake PRO (Perfiles de Marca, Niveles 2-5 Turbo, Modo Ahorro y Auto-Inicio).\n\nIngresa tu Clave de Licencia PRO:"
+        };
+
+        var txtKey = new TextBox
+        {
+            Location = new Point(20, 84),
+            Size = new Size(385, 28),
+            BackColor = Color.FromArgb(46, 50, 60),
+            ForeColor = Color.White,
+            Font = UiFont(10.5F, FontStyle.Bold),
+            CharacterCasing = CharacterCasing.Upper
+        };
+
+        var btnActivate = new Button
+        {
+            Location = new Point(20, 126),
+            Size = new Size(185, 38),
+            FlatStyle = FlatStyle.Flat,
+            BackColor = Color.FromArgb(56, 152, 255),
+            ForeColor = Color.White,
+            Font = UiFont(9.5F, FontStyle.Bold),
+            Text = IsEn ? "Activate PRO" : "Activar PRO",
+            Cursor = Cursors.Hand
+        };
+        btnActivate.FlatAppearance.BorderSize = 0;
+
+        var btnClose = new Button
+        {
+            Location = new Point(220, 126),
+            Size = new Size(185, 38),
+            FlatStyle = FlatStyle.Flat,
+            BackColor = Color.FromArgb(58, 62, 72),
+            ForeColor = Color.White,
+            Font = UiFont(9.2F),
+            Text = IsEn ? "Continue Free Lite" : "Seguir en modo Gratis",
+            Cursor = Cursors.Hand
+        };
+        btnClose.FlatAppearance.BorderSize = 0;
+        btnClose.Click += (_, _) => dlg.Close();
+
+        btnActivate.Click += (_, _) =>
+        {
+            if (AppSettings.VerifyLicenseKey(txtKey.Text))
+            {
+                _settings.LicenseKey = txtKey.Text.Trim().ToUpperInvariant();
+                _settings.Save();
+                MessageBox.Show(
+                    IsEn ? "🎉 AudioAwake PRO Unlocked! All features are now active." : "🎉 ¡AudioAwake PRO Activado! Todas las funciones están desbloqueadas.",
+                    "AudioAwake PRO",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                dlg.Close();
+            }
+            else
+            {
+                MessageBox.Show(
+                    IsEn ? "Invalid License Key. Please check your key." : "Clave de licencia no válida. Verifica tu código.",
+                    "AudioAwake PRO",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        };
+
+        dlg.Controls.Add(lblInfo);
+        dlg.Controls.Add(txtKey);
+        dlg.Controls.Add(btnActivate);
+        dlg.Controls.Add(btnClose);
+        dlg.ShowDialog(this);
+
+        Invalidate();
+        return !_settings.IsProUnlocked;
     }
 
     private void ShowDeviceSelectorPopup()
