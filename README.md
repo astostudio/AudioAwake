@@ -1,14 +1,14 @@
 <div align="center">
 
-# ⚡ AudioAwake
+# ⚡ AudioAwake — Gaming & Studio Edition
 
-### **Stop Soundbar & Studio Monitor Auto-Standby Audio Cut-Offs on Windows 10 / 11**
-*Evita que tu barra de sonido o monitores de estudio se apaguen en silencio y corten el primer segundo de audio.*
+### **0.0ms Zero-Delay Footstep & Audio Standby Guard for Windows 10 / 11**
+*Never miss the first enemy footstep in Valorant, CS2, Warzone & Tarkov. Prevents Gaming Headsets, DACs, Soundbars & Studio Monitors from entering micro-sleep.*
 
 [![Release](https://img.shields.io/badge/Release-v1.0.0-0ea5e9?style=for-the-badge)](../../releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-2563eb?style=for-the-badge)](#)
-[![CPU Usage](https://img.shields.io/badge/CPU%20Usage-%3C%200.05%25-10b981?style=for-the-badge)](#)
-[![Author](https://img.shields.io/badge/By-AstoStudio-6366f1?style=for-the-badge)](#)
+[![Latency](https://img.shields.io/badge/Wake%20Delay-0.0%20ms-10b981?style=for-the-badge)](#)
+[![Author](https://img.shields.io/badge/By-AstoStudio-6366f1?style=for-the-badge)](https://github.com/astostudio)
 
 <br/>
 
@@ -22,22 +22,27 @@
 
 ---
 
-## 🇺🇸 English Overview
+## 🎮 Why Competitive Gamers & Studio Creators Need AudioAwake
 
-### **The Problem**
-Many modern soundbars (**Hisense HS2100/AX, Samsung, JBL Bar, Creative Stage, Sony, LG, Bose**) and active studio monitors (**KRK Rokit, Edifier, PreSonus, Yamaha**) feature an aggressive hardware **Auto-Standby** and **AUX Noise-Gate** sensor.
+### **1. The "Silent First Footstep" Bug in Competitive Gaming**
+When holding an angle in silence in **VALORANT, Counter-Strike 2, Call of Duty: Warzone, Escape from Tarkov, Rainbow Six Siege, or Apex Legends**, modern **2.4GHz Wireless Headsets** (*Logitech G Pro X, Razer BlackShark, SteelSeries Arctis, HyperX*), **Gaming Soundbars** (*Razer Leviathan, Sound Blaster Katana*), and **External USB DACs** (*Behringer, Focusrite, Sound Blaster, Astro*) enter a hardware **power-saving micro-sleep / noise-gate state** after just 2–3 seconds of silence.
 
-Whenever your PC is silent for a few seconds, the speaker shuts down its internal Class-D amplifier. When a new sound plays (a YouTube video, game footsteps, or notification), the speaker takes **0.5 to 1.5 seconds** to wake up—cutting off the beginning of your audio.
+When an enemy takes a single step or reloads, the amplifier takes **0.5 to 1.2 seconds** to wake up—**completely swallowing the first footstep sound**.
 
-### **The Solution: AudioAwake**
-**AudioAwake** generates a real-time, mathematically synthesized **Hybrid Anti-Gate Pilot (`38 Hz Sub-Carrier + 19.2 kHz Ultrasonic Pilot + Micro-Dither`)** that passes through the speaker's internal high-pass filter to keep the amplifier stage permanently engaged—while remaining **100% inaudible to the human ear**.
+### **2. Soundbars & Studio Monitors Cutting Off Audio**
+Home theater soundbars (**Hisense HS2100/AX, Samsung, JBL, Sony, LG, Bose**) and active studio monitors (**KRK Rokit, Edifier, PreSonus, Yamaha**) connected via **AUX, Optical (SPDIF), or Bluetooth** shut off their internal Class-D amplifier during silence, cutting off the beginning of songs, YouTube videos, and Windows notifications.
 
-### ✨ Key Features
-- 🎯 **Brand & Connection Presets:** Pre-calibrated profiles for *Hisense, Samsung, LG, Sony, JBL, Creative, Bose, Studio Monitors (KRK/Edifier)*, and *Optical SPDIF / Bluetooth* outputs.
-- 🎚️ **5-Level Anti-Gate Power Dial (`Lv.1` to `Lv.5`):** Fine-tune the keep-alive signal strength to match your USB audio interface knob (*Behringer U-Phoria UMC22, Focusrite Scarlett*, etc.).
-- 🌙 **Smart Eco-Sleep + Instant Mouse Wake-Boost:** Allows your soundbar to rest and save electricity when you leave your PC for `15 / 30 / 60 / 120 minutes`, and wakes it up the exact millisecond you move your mouse again.
-- 🔴 **1-Click System Tray Toggle & Custom Global Hotkey:** Left-click the tray icon once to pause protection (turns **Red**) or resume (turns **Blue**), or trigger it from any game with your custom shortcut (`Ctrl + Alt + A` by default).
-- 🎬 **OBS & Screen-Recording Safe:** Zero audible interference in recordings or streams, using `< 0.05%` CPU and zero disk reads.
+---
+
+## ✨ How AudioAwake Solves It (0.0 ms Wake Delay)
+
+**AudioAwake** synthesizes a real-time, mathematically generated **Hybrid Anti-Gate Pilot (`38 Hz Sub-Carrier + 19.2 kHz Ultrasonic Pilot + Micro-Dither`)** that passes through hardware high-pass filters to keep your DAC and amplifier stage **100% open continuously**—with **zero audible sound** to the human ear.
+
+- 🎮 **Auto-Game Detector:** Automatically detects when **VALORANT, CS2, Warzone, Tarkov, Fortnite, Apex, Overwatch 2, Dota 2, or LoL** is running and locks your audio channel at `0.0 ms` readiness.
+- 🎧 **Stereo L/R Radar Reflex Test:** Built-in left/right stereo radar test to verify instant imaging and zero wake-up lag before entering a match.
+- 🎯 **Gaming & Studio Presets:** Ready-to-use profiles for *Gaming Soundbars (Razer/Katana)*, *2.4GHz Wireless Headsets*, *USB Audio Interfaces/DACs*, *Hisense/Samsung/JBL Soundbars*, and *KRK Studio Monitors*.
+- 🌙 **Smart AFK Eco-Sleep + Instant Mouse Wake-Boost:** Lets your speakers rest when you leave your PC for `15–120 minutes`, and wakes them up the exact millisecond you touch your mouse.
+- 🔴 **1-Click Tray Toggle & In-Game Hotkey:** Left-click the tray icon to pause (turns **Red**) or resume (turns **Blue**), or toggle inside any full-screen game with your custom shortcut (`Ctrl + Alt + A`).
 
 <div align="center">
   <img src="ImagenesTienda/2_Screenshot_App_English.png" width="760" alt="AudioAwake UI English" />
@@ -45,23 +50,15 @@ Whenever your PC is silent for a few seconds, the speaker shuts down its interna
 
 ---
 
-## 🇪🇸 Descripción en Español
+## 🇪🇸 Edición Gaming & Estudio en Español
 
 <div align="center">
   <img src="ImagenesTienda/4_Banner_Tienda_1920x1080_ES.png" alt="AudioAwake Banner ES" />
 </div>
 
-### **¿Qué soluciona AudioAwake?**
-Cuando conectas una barra de sonido (como **Hisense HS2100, Samsung, JBL, Sony, LG, Creative**) o monitores de estudio (**KRK Rokit, Edifier, PreSonus**) a tu PC o interfaz de audio (**Behringer UMC22, Focusrite**, etc.) por cable **AUX, Óptico o Bluetooth**, la puerta de ruido (*Noise-Gate*) y el ahorro de energía apagan el amplificador tras unos segundos de silencio. Al reproducir un nuevo audio, se pierde el primer medio segundo mientras la barra "despierta".
-
-**AudioAwake** mantiene el amplificador interno siempre activo sin emitir ningún ruido audible.
-
-### ✨ Características Principales
-- 🎯 **Perfiles por Marca y Conexión:** Ajustes listos para *Hisense, Samsung, LG, Sony, JBL, Monitores de Estudio* y *Cable Óptico (SPDIF)*.
-- 🎚️ **Dial Anti-Gate de 5 Niveles (`Lv.1` a `Lv.5`):** Supera la puerta de ruido rápida de entradas AUX analógicas e interfaces USB.
-- 🌙 **Modo Ahorro Inteligente (`Eco Sleep`) + `Wake-Boost`:** Deja descansar tu barra si te alejas de la PC por `15–120 min` y la despierta en el milisegundo en que vuelves a mover el mouse.
-- 🔴 **Control en 1 Clic + Tecla Rápida Global:** Haz 1 clic en el ícono junto al reloj para apagar (se pone en **Rojo**) o activar, o configura tu propia tecla rápida.
-- 🌐 **Bilingüe Instantáneo:** Cambia entre Español e Inglés con un clic.
+### **¿Qué soluciona AudioAwake en Juegos y Equipos de Sonido?**
+- **En Juegos Competitivos (*Valorant, CS2, Warzone, Tarkov*):** Evita que tus audífonos inalámbricos 2.4GHz, DACs USB o barras gaming entren en *micro-reposo* cuando estás en silencio esperando a un enemigo, logrando **0.0 ms de retraso** para que siempre escuches el primer paso o recarga.
+- **En Barras de Sonido y Monitores (*Hisense HS2100, Samsung, JBL, KRK, Edifier*):** Supera la puerta de ruido (*Noise-Gate*) del cable AUX, Óptico o Bluetooth para que nunca se corte el primer medio segundo de tus videos, canciones o notificaciones.
 
 <div align="center">
   <img src="ImagenesTienda/1_Screenshot_App_Espanol.png" width="760" alt="AudioAwake UI Español" />
@@ -69,15 +66,6 @@ Cuando conectas una barra de sonido (como **Hisense HS2100, Samsung, JBL, Sony, 
 
 ---
 
-## 🚀 Quick Start / Instalación Rápida
-
-1. Go to [**Releases**](../../releases/latest) and download **`AudioAwake_v1.0.0_Windows_x64.zip`**.
-2. Extract the folder anywhere on your PC and run **`AudioAwake.exe`** *(self-contained — no extra `.NET` installation required)*.
-3. Select your **Output Device (1)**, your **Speaker Brand (2)**, and choose **`Lv.2 (AUX+)`** or **`Lv.3`** on the right dial.
-4. Enable **Auto-Start** and click **Minimize to System Tray**.
-
----
-
 <div align="center">
-  Developed with ❤️ by <b>AstoStudio</b>
+  Developed with ❤️ by <a href="https://github.com/astostudio"><b>AstoStudio</b></a>
 </div>

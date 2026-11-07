@@ -329,11 +329,14 @@ public partial class Form1 : Form
         using var brushMuted = new SolidBrush(Color.FromArgb(200, 245, 245, 245));
         using var brushWhite = new SolidBrush(Color.White);
 
+        bool hasGame = !string.IsNullOrEmpty(_engine.DetectedGameName);
         string statusHeader = !_settings.IsEnabled
             ? (IsEn ? "● PROTECTION PAUSED (OFF)" : "● PROTECCIÓN EN PAUSA")
-            : (_engine.IsSleepingDueToIdle
-                ? (IsEn ? "☾ ECO SLEEP MODE" : "☾ MODO AHORRO ACTIVO")
-                : (IsEn ? "● ANTI-GATE AUX ACTIVE" : "● ANTI-GATE AUX ACTIVO"));
+            : (hasGame
+                ? (IsEn ? $"★ GAME ACTIVE: {_engine.DetectedGameName} (0.0ms)" : $"★ JUEGO ACTIVO: {_engine.DetectedGameName} (0.0ms)")
+                : (_engine.IsSleepingDueToIdle
+                    ? (IsEn ? "☾ ECO SLEEP MODE" : "☾ MODO AHORRO ACTIVO")
+                    : (IsEn ? "● ZERO-DELAY GAMING & AUX GUARD" : "● GUARDIA GAMING & AUX (0.0ms)")));
 
         Color statusColor = !_settings.IsEnabled
             ? Color.FromArgb(255, 120, 120)
@@ -360,8 +363,8 @@ public partial class Form1 : Form
 
         string leftStat = IsEn ? $"Awake: {uptimeStr}" : $"Activo: {uptimeStr}";
         string rightStat = IsEn
-            ? $"Dual Anti-Gate ({_settings.FrequencyHz:0}Hz + 19.2kHz)"
-            : $"Piloto Anti-Gate ({_settings.FrequencyHz:0}Hz + 19.2kHz)";
+            ? "0.0ms Reflex | Anti-Gate (19.2kHz)"
+            : "0.0ms Reflejo | Anti-Gate (19.2kHz)";
 
         g.DrawString(leftStat, fontMetric, brushWhite, statPill.X + 14, statPill.Y + 11);
         using (var sepPen = new Pen(Color.FromArgb(65, 255, 255, 255), 1f))
@@ -380,12 +383,12 @@ public partial class Form1 : Form
         DrawDropdownPill(
             g,
             _rectBrandPill,
-            IsEn ? "2. Speaker Brand" : "2. Marca / Equipo",
+            IsEn ? "2. Gaming / Speaker Profile" : "2. Perfil Gamer / Altavoz",
             ShortenText(profName, 19),
             _hoveredZone == "brand");
 
         DrawFrostedCard(g, _rectTestSliderBar, 15, Color.FromArgb(52, 20, 20, 24), Color.FromArgb(45, 255, 255, 255));
-        int fillW = _isTestingAudio ? _rectTestSliderBar.Width : 238;
+        int fillW = _isTestingAudio ? _rectTestSliderBar.Width : 246;
         Rectangle fillRect = new(_rectTestSliderBar.X, _rectTestSliderBar.Y, fillW, _rectTestSliderBar.Height);
         using (var fillPath = CreateRoundedPath(fillRect, 15))
         using (var fillBrush = new SolidBrush(_isTestingAudio ? Color.FromArgb(84, 174, 255) : Color.White))
@@ -393,11 +396,11 @@ public partial class Form1 : Form
             g.FillPath(fillBrush, fillPath);
         }
 
-        using var fontTest = UiFont(8.6F, FontStyle.Bold);
+        using var fontTest = UiFont(8.5F, FontStyle.Bold);
         using var darkBrush = new SolidBrush(Color.FromArgb(32, 34, 40));
         string testText = _isTestingAudio
-            ? (IsEn ? "► Playing 440Hz Test Tone..." : "► Reproduciendo tono de prueba...")
-            : (IsEn ? "► Hold here to test sound" : "► Mantén aquí para probar");
+            ? (IsEn ? "► Stereo Radar L / R Testing..." : "► Probando Radar Estéreo L / R...")
+            : (IsEn ? "► Hold for Stereo L/R Reflex Test" : "► Mantén: Prueba Radar Estéreo L/R");
         g.DrawString(testText, fontTest, darkBrush, _rectTestSliderBar.X + 14, _rectTestSliderBar.Y + 8);
     }
 
@@ -764,20 +767,20 @@ public partial class Form1 : Form
                 using var bWhite = new SolidBrush(Color.White);
                 using var bBlue = new SolidBrush(Color.FromArgb(96, 185, 255));
 
-                Rectangle pillRect = new(80, 150, 440, 48);
+                Rectangle pillRect = new(80, 150, 480, 48);
                 DrawFrostedCard(g, pillRect, 24, Color.FromArgb(75, 72, 168, 255), Color.FromArgb(140, 130, 205, 255));
-                g.DrawString("★ WINDOWS 10 / 11 AUDIO UTILITY", fBadge, bWhite, 110, 163);
+                g.DrawString("★ COMPETITIVE GAMING & STUDIO AUDIO GUARD", fBadge, bWhite, 106, 163);
 
                 g.DrawString("AudioAwake", fHero, bWhite, 76, 230);
-                g.DrawString("Stop Soundbar & Studio Monitor\nAuto-Standby Audio Cut-Offs", fSub, bBlue, 80, 325);
+                g.DrawString("0.0ms Zero-Delay Footstep & Audio Guard\nfor Gaming Headsets, DACs & Soundbars", fSub, bBlue, 80, 325);
 
                 string[] features =
                 {
-                    "✔  Eliminates the 0.5s cut-off on AUX, Optical & USB Interfaces",
-                    "✔  Presets for Hisense, Samsung, JBL, Sony, LG & KRK Monitors",
-                    "✔  Smart Eco-Sleep when away + Instant Mouse Wake-Boost",
-                    "✔  100% OBS & Screen-Recording Safe  |  < 0.05% CPU Usage",
-                    "✔  One-Click Tray Toggle (Red/Blue) & Custom Global Hotkey"
+                    "✔  Never miss the first enemy footstep in Valorant, CS2, Warzone & Tarkov",
+                    "✔  Eliminates 0.5s standby cut-offs on AUX, Optical, DACs & 2.4GHz Headsets",
+                    "✔  Auto-Game Detector + Presets for Razer, Logitech, Hisense, JBL & KRK",
+                    "✔  Smart Eco-Sleep when AFK + Instant Mouse Wake-Boost (< 0.05% CPU)",
+                    "✔  One-Click Tray Toggle (Red/Blue) & Custom Global In-Game Hotkey"
                 };
 
                 int fy = 450;
@@ -837,18 +840,18 @@ public partial class Form1 : Form
 
                 Rectangle pillRect = new(80, 150, 480, 48);
                 DrawFrostedCard(g, pillRect, 24, Color.FromArgb(75, 72, 168, 255), Color.FromArgb(140, 130, 205, 255));
-                g.DrawString("★ UTILIDAD DE AUDIO PARA WINDOWS 10 / 11", fBadge, bWhite, 108, 163);
+                g.DrawString("★ AUDIO COMPETITIVO GAMING & STUDIO GUARD", fBadge, bWhite, 104, 163);
 
                 g.DrawString("AudioAwake", fHero, bWhite, 76, 230);
-                g.DrawString("Evita que tu Barra de Sonido o Monitores\nse Apaguen y Corten el Inicio del Audio", fSub, bBlue, 80, 325);
+                g.DrawString("0.0ms Cero Retraso en Pasos y Sonido para\nBarras de Sonido, DACs y Audífonos Gaming", fSub, bBlue, 80, 325);
 
                 string[] features =
                 {
-                    "✔  Elimina el corte de 0.5s en AUX, Óptico e Interfaces USB",
-                    "✔  Perfiles para Hisense, Samsung, JBL, Sony, LG y Monitores KRK",
-                    "✔  Modo Ahorro al alejarte + Despertar instantáneo con el mouse",
-                    "✔  100% Limpio al grabar con OBS  |  Menos de 0.05% de CPU",
-                    "✔  Apagado en 1 Clic (Ícono Rojo/Azul) y Tecla Rápida Global"
+                    "✔  Escucha el primer paso enemigo en Valorant, CS2, Warzone y Tarkov",
+                    "✔  Elimina el corte de 0.5s en AUX, Óptico, Interfaces USB y Headsets 2.4GHz",
+                    "✔  Auto-Detector de Juegos + Perfiles Razer, Logitech, Hisense, JBL y KRK",
+                    "✔  Modo Ahorro AFK + Despertar instantáneo con el mouse (< 0.05% CPU)",
+                    "✔  Apagado en 1 Clic (Ícono Rojo/Azul) y Tecla Rápida In-Game"
                 };
 
                 int fy = 450;

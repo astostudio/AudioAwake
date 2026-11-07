@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
@@ -31,6 +32,21 @@ public class AudioKeepAliveEngine : IDisposable
     [DllImport("user32.dll")]
     private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
 
+    private static readonly (string ProcessName, string DisplayName)[] CompetitiveGames =
+    {
+        ("VALORANT-Win64-Shipping", "VALORANT"),
+        ("cs2", "Counter-Strike 2"),
+        ("cod", "Call of Duty / Warzone"),
+        ("EscapeFromTarkov", "Escape from Tarkov"),
+        ("r5apex", "Apex Legends"),
+        ("FortniteClient-Win64-Shipping", "Fortnite"),
+        ("RainbowSix", "Rainbow Six Siege"),
+        ("Overwatch", "Overwatch 2"),
+        ("dota2", "Dota 2"),
+        ("League of Legends", "League of Legends"),
+        ("PUBG", "PUBG: Battlegrounds")
+    };
+
     public static readonly List<SpeakerProfilePreset> Profiles = new()
     {
         new(
@@ -38,25 +54,29 @@ public class AudioKeepAliveEngine : IDisposable
             "Hisense Soundbars (HS2100 / HS205 / AX — AUX Anti-Gate)",
             KeepAliveSignalType.DualSubTone, 38.0, 0.45, 0.95, 1.85, 3.10, 4.80),
         new(
-            "Samsung / LG / Sony Soundbar (AUX / Analógico)",
-            "Samsung / LG / Sony Soundbar (AUX / Analog)",
-            KeepAliveSignalType.DualSubTone, 35.0, 0.35, 0.80, 1.60, 2.70, 4.20),
+            "Gaming Soundbars (Razer Leviathan / Sound Blaster Katana / LG)",
+            "Gaming Soundbars (Razer Leviathan / Sound Blaster Katana / LG)",
+            KeepAliveSignalType.DualSubTone, 36.0, 0.40, 0.90, 1.80, 3.00, 4.60),
         new(
-            "JBL Bar / Creative Stage / Bose Solo",
-            "JBL Bar / Creative Stage / Bose Solo",
-            KeepAliveSignalType.DualSubTone, 36.0, 0.40, 0.90, 1.75, 2.90, 4.50),
+            "Wireless Gaming Headsets 2.4GHz (Logitech / Razer / SteelSeries / HyperX)",
+            "Wireless Gaming Headsets 2.4GHz (Logitech / Razer / SteelSeries / HyperX)",
+            KeepAliveSignalType.PinkNoise, 30.0, 0.15, 0.35, 0.70, 1.20, 2.00),
+        new(
+            "Gaming DACs & Interfaces (Behringer / Focusrite / Sound Blaster / Astro)",
+            "Gaming DACs & Interfaces (Behringer / Focusrite / Sound Blaster / Astro)",
+            KeepAliveSignalType.DualSubTone, 38.0, 0.45, 0.95, 1.85, 3.10, 4.80),
+        new(
+            "Samsung / LG / Sony / JBL / Bose Soundbars (AUX / Óptico)",
+            "Samsung / LG / Sony / JBL / Bose Soundbars (AUX / Optical)",
+            KeepAliveSignalType.DualSubTone, 35.0, 0.35, 0.85, 1.65, 2.80, 4.30),
         new(
             "Monitores de Estudio (KRK Rokit / Edifier / PreSonus / Yamaha)",
             "Studio Monitors (KRK Rokit / Edifier / PreSonus / Yamaha)",
             KeepAliveSignalType.DualSubTone, 38.0, 0.45, 1.00, 1.95, 3.20, 5.00),
         new(
-            "Cable Óptico Digital (SPDIF) / HDMI / Bluetooth",
-            "Optical Digital (SPDIF) / HDMI / Bluetooth",
-            KeepAliveSignalType.PinkNoise, 32.0, 0.20, 0.45, 0.90, 1.50, 2.40),
-        new(
-            "Universal — Cualquier Altavoz o Barra de Sonido",
-            "Universal — Any Speaker or Soundbar",
-            KeepAliveSignalType.DualSubTone, 36.0, 0.40, 0.85, 1.70, 2.80, 4.50)
+            "Cable Óptico Digital (SPDIF) / HDMI ARC / Bluetooth",
+            "Optical Digital (SPDIF) / HDMI ARC / Bluetooth",
+            KeepAliveSignalType.PinkNoise, 32.0, 0.20, 0.45, 0.90, 1.50, 2.40)
     };
 
     private readonly AppSettings _settings;
@@ -65,10 +85,12 @@ public class AudioKeepAliveEngine : IDisposable
     private KeepAliveSignalProvider? _signalProvider;
     private DateTime _lastRealAudioTime = DateTime.UtcNow;
     private DateTime _wakeBoostUntil = DateTime.MinValue;
+    private DateTime _lastGameScanTime = DateTime.MinValue;
     private bool _wasIdleSleeping = false;
     private readonly object _lock = new();
 
     public string CurrentDeviceName { get; private set; } = "Iniciando...";
+    public string DetectedGameName { get; private set; } = "";
     public bool IsRunning => _wasapiOut?.PlaybackState == PlaybackState.Playing && _settings.IsEnabled;
     public bool IsSuppressedByRealAudio => false;
     public bool IsSleepingDueToIdle => _signalProvider?.SuppressedByIdleSleep ?? false;
@@ -227,6 +249,31 @@ public class AudioKeepAliveEngine : IDisposable
         StateChanged?.Invoke();
     }
 
+    private void ScanRunningCompetitiveGames()
+    {
+        if ((DateTime.UtcNow - _lastGameScanTime).TotalSeconds < 3.0) return;
+        _lastGameScanTime = DateTime.UtcNow;
+
+        try
+        {
+            foreach (var (procName, displayName) in CompetitiveGames)
+            {
+                var procs = Process.GetProcessesByName(procName);
+                if (procs.Length > 0)
+                {
+                    foreach (var p in procs) p.Dispose();
+                    DetectedGameName = displayName;
+                    return;
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        DetectedGameName = "";
+    }
+
     private static double GetUserInputIdleSeconds()
     {
         try
@@ -246,6 +293,8 @@ public class AudioKeepAliveEngine : IDisposable
 
     public void TickMonitor()
     {
+        ScanRunningCompetitiveGames();
+
         lock (_lock)
         {
             if (_wasapiOut == null || _activeDevice == null || _signalProvider == null)
@@ -269,13 +318,11 @@ public class AudioKeepAliveEngine : IDisposable
                 float threshold = Math.Max(0.025f, ownAmplitude * 2.2f);
                 bool isRealAudioPlaying = masterPeak > threshold && !_signalProvider.IsTestToneActive;
 
-                if (isRealAudioPlaying)
+                if (isRealAudioPlaying || !string.IsNullOrEmpty(DetectedGameName))
                 {
                     _lastRealAudioTime = DateTime.UtcNow;
                 }
 
-                // Mantenemos el piloto Anti-Gate siempre continuo (sin pausarlo cuando termina un sonido)
-                // para que la puerta de ruido (Noise-Gate) del AUX de la Hisense HS2100 jamás se cierre.
                 _signalProvider.SuppressedByRealAudio = false;
 
                 double userIdleSeconds = GetUserInputIdleSeconds();
@@ -283,7 +330,7 @@ public class AudioKeepAliveEngine : IDisposable
                 double effectiveIdleSeconds = Math.Min(userIdleSeconds, audioIdleSeconds);
                 CurrentIdleMinutes = effectiveIdleSeconds / 60.0;
 
-                if (_settings.IdleSleepEnabled && _settings.IsEnabled)
+                if (_settings.IdleSleepEnabled && _settings.IsEnabled && string.IsNullOrEmpty(DetectedGameName))
                 {
                     double maxIdleSeconds = Math.Max(1, _settings.IdleSleepMinutes) * 60.0;
                     bool shouldSleep = effectiveIdleSeconds >= maxIdleSeconds;

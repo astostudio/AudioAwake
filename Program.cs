@@ -14,12 +14,20 @@ static class Program
     [STAThread]
     static void Main(string[] args)
     {
+        ApplicationConfiguration.Initialize();
+
+        if (args.Any(a => a.Equals("--export-images", StringComparison.OrdinalIgnoreCase)))
+        {
+            using var exporter = new Form1(startMinimized: true);
+            exporter.ExportStoreMarketingImages();
+            return;
+        }
+
         bool createdNew;
         _singleInstanceMutex = new Mutex(true, MutexName, out createdNew);
 
         if (!createdNew)
         {
-            // Si ya está corriendo en la bandeja del sistema, le avisamos que abra su ventana al frente
             try
             {
                 using var evt = EventWaitHandle.OpenExisting(ShowWindowEventName);
@@ -30,8 +38,6 @@ static class Program
             }
             return;
         }
-
-        ApplicationConfiguration.Initialize();
 
         bool startMinimized = args.Any(a => a.Equals("--minimized", StringComparison.OrdinalIgnoreCase));
         Application.Run(new Form1(startMinimized));

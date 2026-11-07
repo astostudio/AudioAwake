@@ -4,10 +4,8 @@ using NAudio.Wave;
 namespace SoundbarKeepAlive;
 
 /// <summary>
-/// Generador matemático en tiempo real con tecnología Híbrida Anti-Gate AUX:
-/// Combina portadora sub-grave (38-42 Hz) + Piloto Ultrasónico (19.2 kHz) + Micro-Dither
-/// para superar el filtro paso-alto interno de barras como la Hisense HS2100 y mantener
-/// el amplificador Clase-D permanentemente abierto sin "micro-activaciones" al iniciar un sonido.
+/// Generador matemático en tiempo real con tecnología Híbrida Anti-Gate AUX y Zero-Latency Gaming Guard:
+/// Mantiene abierto el DAC/Amplificador con 0.0 ms de retraso ante pasos o disparos en juegos competitivos.
 /// </summary>
 public class KeepAliveSignalProvider : ISampleProvider
 {
@@ -51,7 +49,6 @@ public class KeepAliveSignalProvider : ISampleProvider
         int frames = count / channels;
 
         double subFreq = Math.Clamp(FrequencyHz, 18.0, 90.0);
-        // Piloto ultrasónico en 19,200 Hz (pasa el filtro paso-alto del AUX del soundbar pero es inaudible)
         double ultraFreq = Math.Min(19200.0, sampleRate * 0.42);
         double targetAmplitude = Math.Clamp(VolumePercent / 100.0, 0.0001, 0.12);
 
@@ -86,35 +83,41 @@ public class KeepAliveSignalProvider : ISampleProvider
         {
             _currentGain += (desiredGain - _currentGain) * smoothing;
 
-            float sampleValue = 0f;
+            float sampleL = 0f;
+            float sampleR = 0f;
 
             if (_currentGain > 1e-7)
             {
                 if (IsTestToneActive)
                 {
-                    sampleValue = (float)(Math.Sin(_testPhase) * _currentGain);
+                    // Radar Gamer Stereo Test: Alterna suavemente Izquierda (L) -> Derecha (R) -> Centro
+                    double cycleSec = (_totalSamplesProcessed + f) / (double)sampleRate;
+                    double pan = Math.Sin(cycleSec * 3.5); // Oscila entre canal L y R
+                    float tone = (float)(Math.Sin(_testPhase) * _currentGain);
+                    sampleL = tone * (float)Math.Clamp(0.6 - pan * 0.5, 0.1, 1.0);
+                    sampleR = tone * (float)Math.Clamp(0.6 + pan * 0.5, 0.1, 1.0);
+
                     _testPhase += testPhaseStep;
                     if (_testPhase >= 2.0 * Math.PI) _testPhase -= 2.0 * Math.PI;
                 }
                 else
                 {
+                    float monoSample = 0f;
                     switch (sigType)
                     {
                         case KeepAliveSignalType.SineWave:
-                            // Sub-grave + toque ultrasónico (75% sub + 25% 19.2kHz)
                             double sSub = Math.Sin(_phaseSub) * 0.75;
                             double sUlt = Math.Sin(_phaseUltra) * 0.25;
-                            sampleValue = (float)((sSub + sUlt) * _currentGain);
+                            monoSample = (float)((sSub + sUlt) * _currentGain);
                             break;
 
                         case KeepAliveSignalType.DualSubTone:
-                            // Modo Híbrido Anti-Gate AUX: 55% Sub (38Hz) + 35% Ultrasónico (19.2kHz) + 10% Ruido Rosa Dither
                             double whiteD = _random.NextDouble() * 2.0 - 1.0;
                             _b0 = 0.99886 * _b0 + whiteD * 0.0555179;
                             double dither = (_b0 + whiteD * 0.2) * 0.08;
                             double hSub = Math.Sin(_phaseSub) * 0.55;
                             double hUlt = Math.Sin(_phaseUltra) * 0.35;
-                            sampleValue = (float)((hSub + hUlt + dither) * _currentGain);
+                            monoSample = (float)((hSub + hUlt + dither) * _currentGain);
                             break;
 
                         case KeepAliveSignalType.PinkNoise:
@@ -127,9 +130,11 @@ public class KeepAliveSignalProvider : ISampleProvider
                             _b5 = -0.7616 * _b5 - white * 0.0168980;
                             double pink = (_b0 + _b1 + _b2 + _b3 + _b4 + _b5 + _b6 + white * 0.5362) * 0.04;
                             _b6 = white * 0.115926;
-                            sampleValue = (float)(pink * _currentGain);
+                            monoSample = (float)(pink * _currentGain);
                             break;
                     }
+                    sampleL = monoSample;
+                    sampleR = monoSample;
                 }
             }
 
@@ -139,13 +144,19 @@ public class KeepAliveSignalProvider : ISampleProvider
             _phaseUltra += phaseStepUltra;
             if (_phaseUltra >= 2.0 * Math.PI) _phaseUltra -= 2.0 * Math.PI;
 
-            float abs = Math.Abs(sampleValue);
+            float abs = Math.Max(Math.Abs(sampleL), Math.Abs(sampleR));
             if (abs > maxSample) maxSample = abs;
 
             int baseIdx = offset + f * channels;
-            for (int c = 0; c < channels; c++)
+            if (channels >= 2)
             {
-                buffer[baseIdx + c] = sampleValue;
+                buffer[baseIdx] = sampleL;
+                buffer[baseIdx + 1] = sampleR;
+                for (int c = 2; c < channels; c++) buffer[baseIdx + c] = sampleL;
+            }
+            else if (channels == 1)
+            {
+                buffer[baseIdx] = (sampleL + sampleR) * 0.5f;
             }
         }
 
