@@ -269,6 +269,46 @@ public partial class Form1 : Form
     {
         Rectangle rect = new(0, 0, 860, 520);
 
+        if (AppSettings.IsGamerEdition)
+        {
+            // Tema Esports Obsidian + Neon Violeta / Cian
+            using (var baseGrad = new LinearGradientBrush(
+                rect,
+                Color.FromArgb(18, 20, 32),
+                Color.FromArgb(10, 12, 20),
+                LinearGradientMode.ForwardDiagonal))
+            {
+                g.FillRectangle(baseGrad, rect);
+            }
+
+            DrawAmbientGlow(g, -60, -50, 500, 360, Color.FromArgb(95, 139, 92, 246)); // Neon Violeta
+            DrawAmbientGlow(g, 180, 250, 460, 320, Color.FromArgb(75, 6, 182, 212));  // Electric Cyan
+
+            if (!_settings.IsEnabled)
+            {
+                DrawAmbientGlow(g, 480, 80, 380, 360, Color.FromArgb(85, 239, 68, 68));
+            }
+            else
+            {
+                DrawAmbientGlow(g, 520, 80, 380, 360, Color.FromArgb(85, 0, 240, 255));
+            }
+
+            Rectangle sidebarRectG = new(592, 0, 860 - 592, 520);
+            using (var sideBrush = new SolidBrush(Color.FromArgb(85, 8, 10, 18)))
+            {
+                g.FillRectangle(sideBrush, sidebarRectG);
+            }
+            using (var divPen = new Pen(Color.FromArgb(80, 0, 240, 255), 1.2f))
+            {
+                g.DrawLine(divPen, 592, 0, 592, 520);
+            }
+
+            using var outerPathG = CreateRoundedPath(new Rectangle(1, 1, 860 - 3, 520 - 3), 30);
+            using var outerPenG = new Pen(Color.FromArgb(130, 139, 92, 246), 1.8f);
+            g.DrawPath(outerPenG, outerPathG);
+            return;
+        }
+
         using (var baseGrad = new LinearGradientBrush(
             rect,
             Color.FromArgb(106, 96, 90),
@@ -408,6 +448,66 @@ public partial class Form1 : Form
     {
         int cx = bounds.X + bounds.Width / 2;
 
+        if (AppSettings.IsGamerEdition)
+        {
+            // Ilustración Gamer: Audífonos Pro RGB + Radar Táctico de Pasos (L / R)
+            int cy = bounds.Y + bounds.Height / 2 + 6;
+
+            // Radar táctico circular de fondo
+            using (var radarPen = new Pen(Color.FromArgb(45, 0, 240, 255), 1.2f))
+            {
+                g.DrawEllipse(radarPen, cx - 56, cy - 56, 112, 112);
+                g.DrawEllipse(radarPen, cx - 36, cy - 36, 72, 72);
+                g.DrawLine(radarPen, cx - 60, cy, cx + 60, cy);
+                g.DrawLine(radarPen, cx, cy - 60, cx, cy + 60);
+            }
+
+            // Diadema superior de los audífonos gaming
+            using (var bandPen = new Pen(Color.FromArgb(52, 62, 82), 9f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+            {
+                g.DrawArc(bandPen, cx - 42, cy - 52, 84, 80, 180, 180);
+            }
+            using (var rgbBandPen = new Pen(_settings.IsEnabled ? Color.FromArgb(168, 85, 247) : Color.FromArgb(239, 68, 68), 3f))
+            {
+                g.DrawArc(rgbBandPen, cx - 42, cy - 52, 84, 80, 195, 150);
+            }
+
+            // Copas izquierda (L) y derecha (R) con anillo RGB Neón
+            Rectangle cupL = new(cx - 52, cy - 16, 24, 42);
+            Rectangle cupR = new(cx + 28, cy - 16, 24, 42);
+            Color neonColor = !_settings.IsEnabled
+                ? Color.FromArgb(255, 70, 70)
+                : Color.FromArgb(0, 240, 255);
+
+            using (var cupBrush = new SolidBrush(Color.FromArgb(26, 30, 42)))
+            using (var neonPen = new Pen(neonColor, 2.5f))
+            {
+                using var pathL = CreateRoundedPath(cupL, 8);
+                using var pathR = CreateRoundedPath(cupR, 8);
+                g.FillPath(cupBrush, pathL);
+                g.FillPath(cupBrush, pathR);
+                g.DrawPath(neonPen, pathL);
+                g.DrawPath(neonPen, pathR);
+            }
+
+            // Micrófono boom táctico
+            using (var micPen = new Pen(Color.FromArgb(180, 200, 225), 2.5f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+            {
+                g.DrawLine(micPen, cx - 40, cy + 22, cx - 16, cy + 38);
+            }
+            using (var micTip = new SolidBrush(neonColor))
+            {
+                g.FillEllipse(micTip, cx - 18, cy + 34, 8, 8);
+            }
+
+            using var fTag = UiFont(8.5F, FontStyle.Bold);
+            using var bNeon = new SolidBrush(neonColor);
+            string tag = _settings.IsEnabled ? "0.0ms FPS" : "OFF";
+            var tSz = g.MeasureString(tag, fTag);
+            g.DrawString(tag, fTag, bNeon, cx - tSz.Width / 2f, bounds.Bottom - 26);
+            return;
+        }
+
         if (_settings.IsEnabled)
         {
             Point[] beam =
@@ -483,16 +583,27 @@ public partial class Form1 : Form
 
         Color idleFill = _hoveredZone == "idletime"
             ? Color.FromArgb(95, 75, 85, 100)
-            : Color.FromArgb(80, 52, 52, 56);
-        DrawFrostedCard(g, _rectIdleTimeCard, 20, idleFill, Color.FromArgb(60, 255, 255, 255));
+            : (AppSettings.IsGamerEdition ? Color.FromArgb(95, 36, 24, 68) : Color.FromArgb(80, 52, 52, 56));
+        DrawFrostedCard(g, _rectIdleTimeCard, 20, idleFill, Color.FromArgb(75, 139, 92, 246));
 
-        string idleTitle = IsEn
-            ? "Eco Sleep Timer (Click to change)"
-            : "Dormir si no uso la PC (Clic cambia)";
-        string idleVal = _settings.IdleSleepEnabled
-            ? $"{_settings.IdleSleepMinutes} min"
-            : (IsEn ? "Off" : "Desactivado");
-        DrawMetricContent(g, _rectIdleTimeCard, idleTitle, idleVal);
+        if (AppSettings.IsGamerEdition)
+        {
+            string swTitle = IsEn
+                ? "Quick Output Switcher (1-Click Headset ⇄ Speaker)"
+                : "Cambio Rápido Salida (1 Clic: Audífonos ⇄ Barra)";
+            string swVal = ShortenText(_engine.CurrentDeviceName, 21);
+            DrawMetricContent(g, _rectIdleTimeCard, swTitle, swVal);
+        }
+        else
+        {
+            string idleTitle = IsEn
+                ? "Eco Sleep Timer (Click to change)"
+                : "Dormir si no uso la PC (Clic cambia)";
+            string idleVal = _settings.IdleSleepEnabled
+                ? $"{_settings.IdleSleepMinutes} min"
+                : (IsEn ? "Off" : "Desactivado");
+            DrawMetricContent(g, _rectIdleTimeCard, idleTitle, idleVal);
+        }
     }
 
     private static void DrawMetricContent(Graphics g, Rectangle card, string label, string bigValue)
@@ -683,9 +794,18 @@ public partial class Form1 : Form
         DrawCircleMiniButton(g, _rectDialMinus, "–", _hoveredZone == "minus");
         DrawCircleMiniButton(g, _rectDialPlus, "+", _hoveredZone == "plus");
 
-        DrawModeSquareButton(g, _rectModeBtn1, "☼", IsEn ? "Soft" : "Suave", _settings.StrengthLevel == 1 && _settings.IsEnabled);
-        DrawModeSquareButton(g, _rectModeBtn2, "≋", "AUX+", (_settings.StrengthLevel is 2 or 3) && _settings.IsEnabled);
-        DrawModeSquareButton(g, _rectModeBtn3, "⚡", "Turbo", _settings.StrengthLevel >= 4 && _settings.IsEnabled);
+        if (AppSettings.IsGamerEdition)
+        {
+            DrawModeSquareButton(g, _rectModeBtn1, "⌖", "FPS", _settings.StrengthLevel == 1 && _settings.IsEnabled);
+            DrawModeSquareButton(g, _rectModeBtn2, "⚔", "BR+", (_settings.StrengthLevel is 2 or 3) && _settings.IsEnabled);
+            DrawModeSquareButton(g, _rectModeBtn3, "⚡", "MAX", _settings.StrengthLevel >= 4 && _settings.IsEnabled);
+        }
+        else
+        {
+            DrawModeSquareButton(g, _rectModeBtn1, "☼", IsEn ? "Soft" : "Suave", _settings.StrengthLevel == 1 && _settings.IsEnabled);
+            DrawModeSquareButton(g, _rectModeBtn2, "≋", "AUX+", (_settings.StrengthLevel is 2 or 3) && _settings.IsEnabled);
+            DrawModeSquareButton(g, _rectModeBtn3, "⚡", "Turbo", _settings.StrengthLevel >= 4 && _settings.IsEnabled);
+        }
 
         Color trayFill = _hoveredZone == "tray"
             ? Color.FromArgb(135, 84, 174, 255)
@@ -1298,6 +1418,22 @@ public partial class Form1 : Form
 
     private void CycleIdleMinutes()
     {
+        if (AppSettings.IsGamerEdition)
+        {
+            _currentDevices = _engine.GetOutputDevices(IsEn);
+            if (_currentDevices.Count > 1)
+            {
+                int curIdx = _currentDevices.FindIndex(d => d.Id == _settings.SelectedDeviceId);
+                int nextIdx = (curIdx + 1) % _currentDevices.Count;
+                if (nextIdx == 0 && _currentDevices.Count > 1) nextIdx = 1; // Saltar "Automático" al alternar rápido
+                _settings.SelectedDeviceId = _currentDevices[nextIdx].Id;
+                _settings.Save();
+                _engine.StartOrRestart();
+                Invalidate();
+            }
+            return;
+        }
+
         int idx = Array.IndexOf(_idleMinuteOptions, _settings.IdleSleepMinutes);
         idx = (idx + 1) % _idleMinuteOptions.Length;
         _settings.IdleSleepMinutes = _idleMinuteOptions[idx];
